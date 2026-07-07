@@ -274,13 +274,29 @@ function toggleCategoryExpand(){
   document.getElementById("categoryExpandedMenu").classList.toggle("open");
   document.getElementById("chipsExpandBtn").classList.toggle("expanded");
 }
-function getFiltered(){
+
+function getFiltered() {
   const q = document.getElementById("searchInput").value.toLowerCase().trim();
+  
   return productCards.filter(card => {
     const all = [card.main, ...card.variants];
-    if(activeBannerAdValue && !all.some(item => (item.ad_value || "").trim() === activeBannerAdValue.trim())) return false;
-    if(selectedCat !== "All" && !all.some(item => parseCategoriesFromProduct(item.category || "").some(cat => cat.trim().toLowerCase() === selectedCat.trim().toLowerCase()))) return false;
-    if(q && !all.some(item => (item.product_name || "").toLowerCase().includes(q))) return false;
+    
+    // 1. Filter by Banner Ad
+    if (activeBannerAdValue && !all.some(item => (item.ad_value || "").trim() === activeBannerAdValue.trim())) return false;
+    
+    // 2. Filter by Category
+    if (selectedCat !== "All" && !all.some(item => parseCategoriesFromProduct(item.category || "").some(cat => cat.trim().toLowerCase() === selectedCat.trim().toLowerCase()))) return false;
+    
+    // 3. SEARCH LOGIC: Check Title AND Description
+    if (q) {
+      const matchFound = all.some(item => {
+        const nameMatch = (item.product_name || "").toLowerCase().includes(q);
+        const descMatch = (item.description || "").toLowerCase().includes(q);
+        return nameMatch || descMatch; // Returns true if either matches
+      });
+      if (!matchFound) return false;
+    }
+    
     return true;
   });
 }
